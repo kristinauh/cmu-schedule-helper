@@ -1,0 +1,83 @@
+{
+  "id": "ece-ms",
+  "name": "ECE M.S. (Spring 2027)",
+  "description": "MS in Electrical and Computer Engineering — CIT Elective and General Technical Elective coursework for Spring 2027. Uses 300+ level ranges from Stellic audit.",
+  "categories": [
+    {
+      "id": "ece-core",
+      "name": "ECE Core",
+      "description": "60 units of graduate coursework (600+) within ECE (18-XXX).",
+      "color": "#f97316",
+      "minLevel": 600,
+      "departments": ["18"],
+      "includeCourses": [],
+      "excludeCourses": [
+        "18-601", "18-602", "18-603", "18-605", "18-606",
+        "18-700", "18-701", "18-702", "18-703"
+      ],
+      "notes": "18-601 through 18-606 and 18-700 through 18-703 cannot count toward ECE Core but may count toward CIT or General Technical Electives."
+    },
+    {
+      "id": "cit-elective",
+      "name": "CIT Elective",
+      "description": "24 units from CIT departments (300-999 level). Up to 15 units of 18-980/18-981 project work.",
+      "color": "#60a5fa",
+      "minLevel": 300,
+      "departments": ["04", "06", "12", "14", "18", "19", "24", "27", "39", "42", "49"],
+      "includeCourses": [],
+      "excludeCourses": [
+        "04-601", "04-602", "04-605", "04-900", "04-980",
+        "18-500", "18-540", "18-578", "18-580", "18-982", "18-994",
+        "19-602", "19-655",
+        "24-792",
+        "39-699",
+        "49-750", "49-751", "49-761", "49-762", "49-763", "49-764", "49-765",
+        "49-766", "49-767", "49-770", "49-771", "49-772", "49-773", "49-774",
+        "49-775", "49-780", "49-781", "49-782", "49-788", "49-790", "49-791",
+        "49-792", "49-793"
+      ],
+      "notes": "300-999 level from CIT depts. 18-980/18-981 project units capped at 15 each, max 1 course from 18-980/18-981 combined. Excluded courses may count toward General Technical Elective instead."
+    },
+    {
+      "id": "general-tech",
+      "name": "General Technical Elective",
+      "description": "12 units (300-999 level) from approved programs or individually approved courses.",
+      "color": "#34d399",
+      "minLevel": 300,
+      "departments": [
+        "02", "03", "04", "05", "06", "08", "09", "10", "11", "12",
+        "14", "15", "16", "17", "18", "19", "21", "24", "27", "33",
+        "36", "39", "42", "45", "49", "53", "86", "94", "95"
+      ],
+      "includeCourses": [
+        "46-926", "46-929",
+        "47-830", "47-834",
+        "51-882",
+        "57-947", "57-948",
+        "80-713", "80-816",
+        "84-688",
+        "85-705", "85-777",
+        "90-756", "90-808",
+        "93-711"
+      ],
+      "excludeCourses": [
+        "18-331", "18-332", "18-390", "18-431", "18-432",
+        "18-500", "18-540", "18-578", "18-982",
+        "24-391", "24-392",
+        "39-310"
+      ],
+      "notes": "300-999 level from approved departments. Individually approved courses also listed. 53-XXX courses only count if taken before or during Spring 2026."
+    },
+    {
+      "id": "intro-grad",
+      "name": "Intro to Grad Studies",
+      "description": "1 unit — must be taken in your first semester. Conflicts are not permitted.",
+      "color": "#a78bfa",
+      "minLevel": 900,
+      "departments": [],
+      "includeCourses": ["18-989"],
+      "excludeCourses": [],
+      "notes": "18-989 Introduction to Graduate Studies. Required first semester, no conflicts permitted."
+    }
+  ]
+}
