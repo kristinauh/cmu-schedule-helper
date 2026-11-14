@@ -3,119 +3,178 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CMU Schedule Helper — Spring 2027</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.24.7/babel.min.js"></script>
+<title>CMU Schedule Helper</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #f8fafc; --surface: #ffffff; --border: #e2e8f0; --text: #1e293b;
-  --text-muted: #64748b; --primary: #3b82f6; --primary-light: #dbeafe;
-  --danger: #ef4444; --danger-light: #fee2e2;
+  --bg: #0c0c0f; --surface: #16161b; --surface2: #1e1e25; --surface3: #26262f;
+  --border: #2a2a35; --border-hover: #3a3a48;
+  --text: #e8e6f0; --text-dim: #8a889a; --text-muted: #5a586a;
+  --accent: #c41230; --accent-dim: #8a0d22; --accent-glow: rgba(196,18,48,0.15);
+  --green: #34d399; --green-dim: rgba(52,211,153,0.12);
+  --yellow: #fbbf24; --yellow-dim: rgba(251,191,36,0.12);
+  --blue: #60a5fa; --blue-dim: rgba(96,165,250,0.12);
+  --orange: #fb923c; --orange-dim: rgba(251,146,60,0.12);
+  --radius: 6px;
+  --mono: 'DM Mono', monospace;
+  --sans: 'Instrument Sans', system-ui, sans-serif;
 }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #0f172a; --surface: #1e293b; --border: #334155; --text: #f1f5f9;
-    --text-muted: #94a3b8; --primary: #60a5fa; --primary-light: #1e3a5f;
-    --danger: #f87171; --danger-light: #3b1111;
-  }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:var(--sans); font-size:14px; line-height:1.5; }
+::-webkit-scrollbar { width:6px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+
+.app-header {
+  padding:20px 28px 16px; border-bottom:1px solid var(--border);
+  background:linear-gradient(180deg,#12121a 0%,var(--bg) 100%);
+  position:sticky; top:0; z-index:100;
+  display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;
 }
-:root[data-theme="dark"] {
-  --bg: #0f172a; --surface: #1e293b; --border: #334155; --text: #f1f5f9;
-  --text-muted: #94a3b8; --primary: #60a5fa; --primary-light: #1e3a5f;
-  --danger: #f87171; --danger-light: #3b1111;
+.header-left { display:flex; align-items:baseline; gap:12px; }
+.app-title { font-family:var(--mono); font-size:12px; font-weight:500; color:var(--accent); letter-spacing:0.1em; text-transform:uppercase; }
+.app-semester { font-size:20px; font-weight:700; letter-spacing:-0.02em; }
+.app-semester span { color:var(--text-dim); font-weight:400; font-size:14px; }
+.header-right { display:flex; gap:8px; align-items:center; }
+
+.layout { display:grid; grid-template-columns:340px 1fr; min-height:calc(100vh - 70px); }
+.sidebar { border-right:1px solid var(--border); padding:16px; overflow-y:auto; max-height:calc(100vh - 70px); position:sticky; top:70px; }
+.main-content { padding:16px 20px; overflow-y:auto; max-height:calc(100vh - 70px); }
+
+select, input[type="text"], input[type="number"], textarea {
+  width:100%; padding:7px 10px; background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--radius); color:var(--text); font-family:var(--sans); font-size:13px; outline:none; transition:border-color 0.15s;
 }
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 16px; }
-input, select, button, textarea { font-family: inherit; font-size: 14px; }
-.container { max-width: 1200px; margin: 0 auto; }
-h1 { font-size: 1.5rem; margin-bottom: 4px; }
-.subtitle { color: var(--text-muted); font-size: 0.875rem; margin-bottom: 16px; }
-.filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
-.filters input, .filters select { padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); color: var(--text); }
-.filters input[type="text"] { flex: 1; min-width: 200px; }
-.filters select { min-width: 140px; }
-.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
-.chip { padding: 4px 12px; border-radius: 16px; font-size: 0.8rem; cursor: pointer; border: 2px solid transparent; background: var(--surface); color: var(--text-muted); transition: all 0.15s; }
-.chip:hover { border-color: var(--primary); }
-.chip.active { color: #fff; }
-.chip.dept { background: var(--primary-light); color: var(--primary); }
-.chip.dept.active { background: var(--primary); color: #fff; }
-.btn { padding: 6px 14px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; font-size: 0.8rem; }
-.btn:hover { border-color: var(--primary); }
-.btn.primary { background: var(--primary); color: #fff; border-color: var(--primary); }
-.btn.danger { background: var(--danger); color: #fff; border-color: var(--danger); }
-.btn.sm { padding: 3px 8px; font-size: 0.75rem; }
-.course-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; }
-.course-header { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 4px; }
-.course-num { font-weight: 700; color: var(--primary); font-size: 0.95rem; }
-.course-title { font-weight: 600; font-size: 0.95rem; }
-.course-meta { color: var(--text-muted); font-size: 0.8rem; }
-.sections { margin-top: 6px; }
-.section-row { display: flex; gap: 12px; font-size: 0.8rem; color: var(--text-muted); padding: 2px 0; flex-wrap: wrap; }
-.section-row.conflict { color: var(--danger); text-decoration: line-through; opacity: 0.6; }
-.badge { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 0.7rem; font-weight: 600; margin-left: 6px; }
-.time-block-section { margin-bottom: 12px; padding: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; }
-.time-block-section h3 { font-size: 0.9rem; margin-bottom: 8px; }
-.time-blocks { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
-.time-block-tag { padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; background: var(--danger-light); color: var(--danger); display: flex; align-items: center; gap: 4px; }
-.time-block-tag button { background: none; border: none; color: inherit; cursor: pointer; font-size: 0.8rem; }
-.add-block { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; margin-top: 8px; }
-.add-block select, .add-block input { padding: 4px 8px; border: 1px solid var(--border); border-radius: 4px; background: var(--surface); color: var(--text); font-size: 0.8rem; }
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 16px; }
-.modal { background: var(--surface); border-radius: 12px; padding: 24px; max-width: 700px; width: 100%; max-height: 80vh; overflow-y: auto; }
-.modal h2 { font-size: 1.1rem; margin-bottom: 12px; }
-.modal textarea { width: 100%; min-height: 300px; padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-family: monospace; font-size: 0.8rem; }
-.stats { color: var(--text-muted); font-size: 0.8rem; margin-bottom: 8px; }
-.config-select { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
-@media (max-width: 600px) {
-  .filters input[type="text"] { min-width: 100%; }
-  .course-header { flex-direction: column; }
+select:focus, input:focus, textarea:focus { border-color:var(--accent); box-shadow:0 0 0 2px var(--accent-glow); }
+select { cursor:pointer; appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%238a889a'%3E%3Cpath d='M2 4l4 4 4-4'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 10px center; padding-right:28px; }
+textarea { font-family:var(--mono); font-size:12px; resize:vertical; min-height:120px; }
+
+.filter-section { margin-bottom:16px; }
+.filter-label { font-family:var(--mono); font-size:10px; font-weight:500; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.12em; margin-bottom:6px; }
+.chip-group { display:flex; flex-wrap:wrap; gap:4px; }
+.chip { padding:3px 9px; border-radius:99px; font-size:11px; font-weight:500; cursor:pointer; border:1px solid var(--border); background:var(--surface); color:var(--text-dim); transition:all 0.15s; user-select:none; }
+.chip:hover { border-color:var(--border-hover); color:var(--text); }
+.chip.active { background:var(--accent-glow); border-color:var(--accent); color:var(--accent); }
+.chip.active-green { background:var(--green-dim); border-color:var(--green); color:var(--green); }
+
+.btn { padding:6px 12px; border-radius:var(--radius); border:1px solid var(--border); background:var(--surface); color:var(--text-dim); font-family:var(--sans); font-size:12px; font-weight:500; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; gap:5px; }
+.btn:hover { border-color:var(--border-hover); color:var(--text); background:var(--surface2); }
+.btn-accent { border-color:var(--accent-dim); color:var(--accent); background:var(--accent-glow); }
+.btn-accent:hover { background:var(--accent-dim); color:#fff; }
+.btn-sm { padding:3px 8px; font-size:11px; }
+.btn-green { border-color:rgba(52,211,153,0.3); color:var(--green); background:var(--green-dim); }
+.btn-green:hover { background:rgba(52,211,153,0.2); }
+
+.time-block { display:flex; gap:5px; margin-bottom:5px; align-items:center; }
+.time-block input { flex:1; font-family:var(--mono); font-size:12px; }
+.blocked-item { display:flex; align-items:center; justify-content:space-between; padding:4px 8px; background:var(--surface2); border-radius:var(--radius); margin-bottom:3px; font-family:var(--mono); font-size:11px; color:var(--yellow); }
+.blocked-item button { background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:14px; padding:0 2px; }
+.blocked-item button:hover { color:var(--accent); }
+
+.toggle-row { display:flex; align-items:center; justify-content:space-between; padding:5px 0; }
+.toggle-label { font-size:12px; color:var(--text-dim); }
+.toggle { width:36px; height:20px; border-radius:99px; background:var(--surface3); border:1px solid var(--border); cursor:pointer; position:relative; transition:all 0.2s; flex-shrink:0; }
+.toggle.on { background:var(--accent-glow); border-color:var(--accent); }
+.toggle::after { content:''; position:absolute; width:14px; height:14px; border-radius:50%; background:var(--text-dim); top:2px; left:2px; transition:all 0.2s; }
+.toggle.on::after { left:18px; background:var(--accent); }
+
+.divider { height:1px; background:var(--border); margin:14px 0; }
+
+.results-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; padding-bottom:10px; border-bottom:1px solid var(--border); flex-wrap:wrap; gap:8px; }
+.results-count { font-family:var(--mono); font-size:13px; color:var(--text-dim); }
+.results-count strong { color:var(--text); font-weight:600; }
+
+.dept-group { margin-bottom:20px; }
+.dept-group-header { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-muted); padding:5px 0; margin-bottom:3px; border-bottom:1px solid var(--border); position:sticky; top:0; background:var(--bg); z-index:10; }
+.course-row { display:grid; grid-template-columns:72px 1fr 56px; gap:10px; padding:8px 8px; border-radius:var(--radius); transition:background 0.1s; cursor:pointer; align-items:start; }
+.course-row:hover { background:var(--surface); }
+.course-num { font-family:var(--mono); font-size:13px; font-weight:500; color:var(--blue); white-space:nowrap; }
+.course-title { font-size:13px; font-weight:500; color:var(--text); line-height:1.3; }
+.course-units { font-family:var(--mono); font-size:12px; color:var(--text-dim); text-align:right; white-space:nowrap; }
+.req-badge { display:inline-block; font-family:var(--mono); font-size:9px; font-weight:500; text-transform:uppercase; letter-spacing:0.04em; padding:1px 5px; border-radius:3px; margin-left:5px; vertical-align:middle; }
+
+.expanded-detail { grid-column:1/-1; padding:6px 8px 6px 84px; animation:slideDown 0.15s ease; }
+@keyframes slideDown { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
+.detail-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); gap:5px; }
+.detail-section { padding:5px 9px; background:var(--surface); border-radius:var(--radius); border:1px solid var(--border); }
+.detail-section-id { font-family:var(--mono); font-size:11px; font-weight:500; color:var(--text); }
+.detail-section-time { font-family:var(--mono); font-size:11px; color:var(--text-dim); }
+
+.search-box { position:relative; margin-bottom:12px; }
+.search-box input { padding-left:30px; }
+.search-box svg { position:absolute; left:9px; top:50%; transform:translateY(-50%); width:14px; height:14px; color:var(--text-muted); }
+
+.empty-state { text-align:center; padding:50px 20px; color:var(--text-muted); }
+.empty-state h3 { font-size:16px; margin-bottom:6px; color:var(--text-dim); }
+.loading { display:flex; flex-direction:column; align-items:center; justify-content:center; height:300px; color:var(--text-dim); font-family:var(--mono); font-size:13px; gap:8px; }
+
+.ics-upload input[type="file"] { display:none; }
+.ics-upload label { display:flex; align-items:center; gap:6px; padding:7px 12px; border:1px dashed var(--border); border-radius:var(--radius); cursor:pointer; font-size:12px; color:var(--text-dim); transition:all 0.15s; }
+.ics-upload label:hover { border-color:var(--accent); color:var(--text); }
+
+/* Modal */
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:200; display:flex; align-items:center; justify-content:center; padding:20px; }
+.modal { background:var(--surface); border:1px solid var(--border); border-radius:10px; max-width:700px; width:100%; max-height:85vh; overflow-y:auto; }
+.modal-header { padding:16px 20px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; }
+.modal-header h2 { font-size:16px; font-weight:600; }
+.modal-body { padding:20px; }
+.modal-footer { padding:12px 20px; border-top:1px solid var(--border); display:flex; justify-content:flex-end; gap:8px; }
+.modal-close { background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:20px; padding:4px; }
+.modal-close:hover { color:var(--text); }
+
+.config-card { padding:12px 16px; border:1px solid var(--border); border-radius:var(--radius); margin-bottom:8px; cursor:pointer; transition:all 0.15s; }
+.config-card:hover { border-color:var(--accent); background:var(--accent-glow); }
+.config-card.active { border-color:var(--accent); background:var(--accent-glow); }
+.config-card h4 { font-size:14px; margin-bottom:2px; }
+.config-card p { font-size:12px; color:var(--text-dim); margin:0; }
+
+.cat-editor { padding:12px; border:1px solid var(--border); border-radius:var(--radius); margin-bottom:10px; background:var(--surface2); }
+.cat-editor-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.form-row { display:flex; gap:8px; margin-bottom:8px; }
+.form-row > * { flex:1; }
+.form-label { font-size:11px; color:var(--text-muted); margin-bottom:3px; font-family:var(--mono); }
+
+.info-box { padding:10px 14px; border-radius:var(--radius); font-size:12px; line-height:1.5; margin-bottom:12px; }
+.info-box.note { background:var(--blue-dim); border:1px solid rgba(96,165,250,0.2); color:var(--blue); }
+
+@media(max-width:768px) {
+  .layout { grid-template-columns:1fr; }
+  .sidebar { position:relative; top:0; max-height:none; border-right:none; border-bottom:1px solid var(--border); }
+  .main-content { max-height:none; }
 }
 </style>
 </head>
 <body>
 <div id="root"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
 <script type="text/babel">
-const { useState, useEffect, useMemo, useRef } = React;
+const {useState,useEffect,useMemo,useCallback,useRef} = React;
 
+// ── Config: which configs to list in the picker ──
+// Add your own config filenames here:
 const BUILTIN_CONFIGS = ["ece-ms"];
 
-const DAY_MAP = { M: 'Mon', T: 'Tue', W: 'Wed', R: 'Thu', F: 'Fri', S: 'Sat', U: 'Sun' };
+const DEPT_NAMES = {"02":"Computational Biology","03":"Biological Sciences","04":"CMU-Africa / ICT","05":"Human-Computer Interaction","06":"Chemical Engineering","07":"SCS Interdisciplinary","08":"Software Research","09":"Chemistry","10":"Machine Learning","11":"Language Technologies","12":"Civil & Environmental Eng","14":"Information Networking","15":"Computer Science","16":"Robotics","17":"Software & Societal Systems","18":"ECE","19":"Engineering & Public Policy","21":"Mathematical Sciences","24":"Mechanical Engineering","27":"Materials Science & Eng","33":"Physics","36":"Statistics & Data Science","39":"CIT Interdisciplinary","42":"Biomedical Engineering","45":"Tepper","49":"Integrated Innovation","53":"Entertainment Technology","86":"Neuroscience","94":"Heinz College Wide","95":"Information Systems (Heinz)","99":"CMU-Wide Studies"};
 
-function parseTime(t) {
-  if (!t) return null;
-  const m = t.match(/^(\d{1,2}):(\d{2})(AM|PM)$/i);
-  if (!m) return null;
-  let h = parseInt(m[1]);
-  const min = parseInt(m[2]);
-  const ampm = m[3].toUpperCase();
-  if (ampm === 'PM' && h !== 12) h += 12;
-  if (ampm === 'AM' && h === 12) h = 0;
-  return h * 60 + min;
-}
+const DEPT_GROUPS = {
+  'CIT':['18','39','42','06','12','19','14','49','27','24','04'],
+  'SCS':['02','15','08','16','05','11','10','17'],
+  'MCS':['03','09','21','33'],
+  'Dietrich':['36','86'],
+  'Heinz':['95','94'],
+  'Tepper':['45'],
+};
 
-function expandDays(dayStr) {
-  if (!dayStr || dayStr === 'TBA') return [];
-  return dayStr.split('').map(d => DAY_MAP[d]).filter(Boolean);
-}
-
-function timesConflict(begin1, end1, begin2, end2) {
-  const s1 = parseTime(begin1), e1 = parseTime(end1);
-  const s2 = parseTime(begin2), e2 = parseTime(end2);
-  if (s1 === null || e1 === null || s2 === null || e2 === null) return false;
-  return s1 < e2 && s2 < e1;
-}
-
-function sectionConflictsWithBlocks(section, blocks) {
-  const days = expandDays(section.days);
-  for (const block of blocks) {
-    const blockDays = expandDays(block.days);
-    const overlap = days.some(d => blockDays.includes(d));
-    if (overlap && timesConflict(section.begin, section.end, block.begin, block.end)) return true;
-  }
-  return false;
-}
+// ── Time utils ──
+const DAY_MAP={M:'Mon',T:'Tue',W:'Wed',R:'Thu',F:'Fri',U:'Sat',S:'Sun'};
+function parseTime(t){if(!t)return null;const m=t.match(/(\d+):(\d+)(AM|PM)/i);if(!m)return null;let h=+m[1],mn=+m[2];if(m[3].toUpperCase()==='PM'&&h!==12)h+=12;if(m[3].toUpperCase()==='AM'&&h===12)h=0;return h*60+mn;}
+function expandDays(s){if(!s||s==='TBA')return [];return[...s].filter(c=>DAY_MAP[c]).map(c=>DAY_MAP[c]);}
+function fmtMin(m){const h=Math.floor(m/60),mm=m%60,ap=h>=12?'PM':'AM',hh=h>12?h-12:(h===0?12:h);return`${hh}:${mm.toString().padStart(2,'0')}${ap}`;}
+function overlap(s1,e1,s2,e2){return s1<e2&&s2<e1;}
+function secConflicts(sec,blocked){if(!blocked.length)return false;const[id,days,begin,end]=sec;if(!days||days==='TBA'||!begin||!end)return false;const ds=expandDays(days),s=parseTime(begin),e=parseTime(end);if(s==null||e==null)return false;for(const[d,bs,be]of blocked){if(ds.includes(d)&&overlap(s,e,bs,be))return true;}return false;}
+function courseHasOption(c,blocked){if(!blocked.length)return true;const secs=c.sections;const lecs=secs.filter(s=>s.id&&s.id.startsWith('Lec'));const rest=secs.filter(s=>s.id&&!s.id.startsWith('Lec'));if(lecs.length&&!lecs.some(l=>!secConflicts([l.id,l.days,l.begin,l.end],blocked)))return false;if(rest.length&&!rest.some(s=>!secConflicts([s.id,s.days,s.begin,s.end],blocked)))return false;return true;}
 
 function courseMatchesCategory(course, cat) {
   if (course.level < (cat.minLevel || 0)) return false;
@@ -126,380 +185,517 @@ function courseMatchesCategory(course, cat) {
   return inDept || included;
 }
 
-function parseICS(text) {
-  const blocks = [];
-  const events = text.split('BEGIN:VEVENT');
-  for (let i = 1; i < events.length; i++) {
-    const ev = events[i];
-    const dtstart = ev.match(/DTSTART[^:]*:(\d{8}T\d{6})/);
-    const dtend = ev.match(/DTEND[^:]*:(\d{8}T\d{6})/);
-    const rrule = ev.match(/RRULE:([^\r\n]+)/);
-    const summary = ev.match(/SUMMARY:([^\r\n]+)/);
-    if (!dtstart || !dtend) continue;
-    const startH = parseInt(dtstart[1].substring(9, 11));
-    const startM = parseInt(dtstart[1].substring(11, 13));
-    const endH = parseInt(dtend[1].substring(9, 11));
-    const endM = parseInt(dtend[1].substring(11, 13));
-    const year = parseInt(dtstart[1].substring(0, 4));
-    const month = parseInt(dtstart[1].substring(4, 6)) - 1;
-    const day = parseInt(dtstart[1].substring(6, 8));
-    const date = new Date(year, month, day);
-    const dayOfWeek = date.getDay();
-    const dayLetters = ['U', 'M', 'T', 'W', 'R', 'F', 'S'];
+// ── ICS Parser ──
+function parseICS(text){const blocks=[];const icsDay={MO:'Mon',TU:'Tue',WE:'Wed',TH:'Thu',FR:'Fri',SA:'Sat',SU:'Sun'};const events=text.split('BEGIN:VEVENT');for(const ev of events.slice(1)){const dtS=ev.match(/DTSTART[^:]*:(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})/);const dtE=ev.match(/DTEND[^:]*:(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})/);if(!dtS||!dtE)continue;const sMin=+dtS[4]*60+ +dtS[5],eMin=+dtE[4]*60+ +dtE[5];const byday=ev.match(/BYDAY=([A-Z,]+)/);if(byday){for(const d of byday[1].split(',')){if(icsDay[d])blocks.push([icsDay[d],sMin,eMin]);}}else{const dt=new Date(+dtS[1],+dtS[2]-1,+dtS[3]);blocks.push([['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][dt.getDay()],sMin,eMin]);}}return blocks;}
 
-    let days = [dayLetters[dayOfWeek]];
-    if (rrule) {
-      const byday = rrule[1].match(/BYDAY=([A-Z,]+)/);
-      if (byday) {
-        const icalDays = { MO: 'M', TU: 'T', WE: 'W', TH: 'R', FR: 'F', SA: 'S', SU: 'U' };
-        days = byday[1].split(',').map(d => icalDays[d]).filter(Boolean);
-      }
-    }
-    const fmtTime = (h, m) => {
-      const ampm = h >= 12 ? 'PM' : 'AM';
-      const h12 = h % 12 || 12;
-      return `${String(h12).padStart(2, '0')}:${String(m).padStart(2, '0')}${ampm}`;
-    };
-    blocks.push({
-      days: days.join(''),
-      begin: fmtTime(startH, startM),
-      end: fmtTime(endH, endM),
-      label: summary ? summary[1].trim() : 'Calendar Event'
-    });
-  }
-  return blocks;
-}
+// ── Config Editor Modal ──
+function ConfigEditorModal({initial, onSave, onClose}) {
+  const [cfg, setCfg] = useState(initial || {id:'',name:'',description:'',categories:[]});
+  const [jsonMode, setJsonMode] = useState(false);
+  const [jsonText, setJsonText] = useState('');
 
-function App() {
-  const [courseData, setCourseData] = useState(null);
-  const [search, setSearch] = useState('');
-  const [levelFilter, setLevelFilter] = useState('');
-  const [locationFilter, setLocationFilter] = useState('');
-  const [selectedDepts, setSelectedDepts] = useState(new Set());
-  const [selectedCats, setSelectedCats] = useState(new Set());
-  const [configs, setConfigs] = useState([]);
-  const [activeConfig, setActiveConfig] = useState(null);
-  const [timeBlocks, setTimeBlocks] = useState([]);
-  const [hideConflicts, setHideConflicts] = useState(false);
-  const [showEditor, setShowEditor] = useState(false);
-  const [editorJson, setEditorJson] = useState('');
-  const [newBlockDay, setNewBlockDay] = useState('M');
-  const [newBlockBegin, setNewBlockBegin] = useState('09:00AM');
-  const [newBlockEnd, setNewBlockEnd] = useState('10:00AM');
-  const fileInputRef = useRef(null);
-  const icsInputRef = useRef(null);
+  const updateField = (k,v) => setCfg(prev => ({...prev, [k]:v}));
+  const addCategory = () => setCfg(prev => ({...prev, categories:[...prev.categories, {id:'cat-'+(prev.categories.length+1),name:'',description:'',color:'#60a5fa',minLevel:600,departments:[],includeCourses:[],excludeCourses:[],notes:''}]}));
+  const removeCategory = (i) => setCfg(prev => ({...prev, categories:prev.categories.filter((_,j)=>j!==i)}));
+  const updateCat = (i,k,v) => setCfg(prev => {const cats=[...prev.categories];cats[i]={...cats[i],[k]:v};return{...prev,categories:cats};});
 
-  // Load course data
-  useEffect(() => {
-    fetch('data/courses.json?v=' + Date.now())
-      .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
-      .then(d => {
-        setCourseData(d);
-        const hasLoc = d.courses?.some(c => c.sections?.some(s => s.loc));
-        console.log('[CMU Schedule Helper] Loaded', d.courses?.length, 'courses, locations:', hasLoc);
-        if (hasLoc) setLocationFilter('Pittsburgh, Pennsylvania');
-      })
-      .catch(e => console.error('[CMU Schedule Helper] Failed to load courses:', e));
-  }, []);
-
-  // Load builtin configs
-  useEffect(() => {
-    Promise.all(
-      BUILTIN_CONFIGS.map(id =>
-        fetch(`configs/${id}.json?v=` + Date.now())
-          .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
-          .catch(e => { console.warn(`[Config] Failed to load ${id}:`, e); return null; })
-      )
-    ).then(results => {
-      const loaded = results.filter(Boolean);
-      console.log('[CMU Schedule Helper] Loaded', loaded.length, 'configs');
-      setConfigs(loaded);
-      if (loaded.length > 0 && !activeConfig) {
-        setActiveConfig(loaded[0]);
-      }
-    });
-  }, []);
-
-  // Derived data
-  const locations = useMemo(() => {
-    if (!courseData?.courses) return [];
-    const locs = new Set();
-    courseData.courses.forEach(c => c.sections?.forEach(s => { if (s.loc) locs.add(s.loc); }));
-    return Array.from(locs).sort();
-  }, [courseData]);
-
-  const deptGroups = useMemo(() => {
-    if (!courseData?.courses) return [];
-    const groups = {};
-    courseData.courses.forEach(c => {
-      if (!groups[c.dept]) groups[c.dept] = { dept: c.dept, name: c.deptName, count: 0 };
-      groups[c.dept].count++;
-    });
-    return Object.values(groups).sort((a, b) => a.dept.localeCompare(b.dept));
-  }, [courseData]);
-
-  const filteredCourses = useMemo(() => {
-    if (!courseData?.courses) return [];
-    return courseData.courses.filter(c => {
-      // Search
-      if (search) {
-        const q = search.toLowerCase();
-        if (!c.num.toLowerCase().includes(q) && !c.title.toLowerCase().includes(q) && !c.deptName.toLowerCase().includes(q)) return false;
-      }
-      // Level
-      if (levelFilter) {
-        const lvl = parseInt(levelFilter);
-        if (c.level < lvl) return false;
-      }
-      // Location
-      if (locationFilter) {
-        const hasMatch = c.sections.some(s => s.loc && s.loc === locationFilter);
-        if (!hasMatch) return false;
-      }
-      // Department chips
-      if (selectedDepts.size > 0 && !selectedDepts.has(c.dept)) return false;
-      // Requirement category chips
-      if (selectedCats.size > 0 && activeConfig) {
-        const matchesAnyCat = activeConfig.categories.some(cat => selectedCats.has(cat.id) && courseMatchesCategory(c, cat));
-        if (!matchesAnyCat) return false;
-      }
-      // Conflict filter
-      if (hideConflicts && timeBlocks.length > 0) {
-        const lectureSections = c.sections.filter(s => s.id === 'Lec' || (!c.sections.some(ss => ss.id === 'Lec')));
-        if (lectureSections.length > 0) {
-          const allConflict = lectureSections.every(s => sectionConflictsWithBlocks(s, timeBlocks));
-          if (allConflict) return false;
-        }
-      }
-      return true;
-    });
-  }, [courseData, search, levelFilter, locationFilter, selectedDepts, selectedCats, activeConfig, hideConflicts, timeBlocks]);
-
-  const toggleDept = (dept) => {
-    setSelectedDepts(prev => {
-      const next = new Set(prev);
-      next.has(dept) ? next.delete(dept) : next.add(dept);
-      return next;
-    });
+  const handleExport = () => {
+    const blob = new Blob([JSON.stringify(cfg,null,2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href=url; a.download=`${cfg.id||'config'}.json`; a.click();
+    URL.revokeObjectURL(url);
   };
 
-  const toggleCat = (catId) => {
-    setSelectedCats(prev => {
-      const next = new Set(prev);
-      next.has(catId) ? next.delete(catId) : next.add(catId);
-      return next;
-    });
+  const handleImportJson = () => {
+    try { const parsed = JSON.parse(jsonText); setCfg(parsed); setJsonMode(false); }
+    catch(e) { alert('Invalid JSON: '+e.message); }
   };
-
-  const addTimeBlock = () => {
-    setTimeBlocks(prev => [...prev, { days: newBlockDay, begin: newBlockBegin, end: newBlockEnd, label: 'Blocked' }]);
-  };
-
-  const removeTimeBlock = (idx) => {
-    setTimeBlocks(prev => prev.filter((_, i) => i !== idx));
-  };
-
-  const handleICSImport = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const blocks = parseICS(ev.target.result);
-      setTimeBlocks(prev => [...prev, ...blocks]);
-    };
-    reader.readAsText(file);
-    e.target.value = '';
-  };
-
-  const handleConfigImport = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      try {
-        const cfg = JSON.parse(ev.target.result);
-        setConfigs(prev => [...prev.filter(c => c.id !== cfg.id), cfg]);
-        setActiveConfig(cfg);
-      } catch (err) { alert('Invalid JSON: ' + err.message); }
-    };
-    reader.readAsText(file);
-    e.target.value = '';
-  };
-
-  const openEditor = () => {
-    setEditorJson(activeConfig ? JSON.stringify(activeConfig, null, 2) : '{\n  "id": "custom",\n  "name": "Custom Config",\n  "categories": []\n}');
-    setShowEditor(true);
-  };
-
-  const saveEditor = () => {
-    try {
-      const cfg = JSON.parse(editorJson);
-      setConfigs(prev => [...prev.filter(c => c.id !== cfg.id), cfg]);
-      setActiveConfig(cfg);
-      setShowEditor(false);
-    } catch (err) { alert('Invalid JSON: ' + err.message); }
-  };
-
-  if (!courseData) return <div className="container"><h1>CMU Schedule Helper</h1><p>Loading course data...</p></div>;
 
   return (
-    <div className="container">
-      <h1>CMU Schedule Helper</h1>
-      <div className="subtitle">{courseData.semester} · {courseData.courses.length} courses · Updated {courseData.updated}</div>
-
-      {/* Config selector */}
-      <div className="config-select">
-        <select value={activeConfig?.id || ''} onChange={e => {
-          const cfg = configs.find(c => c.id === e.target.value);
-          setActiveConfig(cfg || null);
-          setSelectedCats(new Set());
-        }}>
-          <option value="">No requirement filter</option>
-          {configs.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-        </select>
-        <button className="btn sm" onClick={openEditor}>Edit Config</button>
-        <button className="btn sm" onClick={() => fileInputRef.current?.click()}>Import Config</button>
-        {activeConfig && <button className="btn sm" onClick={() => {
-          const blob = new Blob([JSON.stringify(activeConfig, null, 2)], { type: 'application/json' });
-          const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = activeConfig.id + '.json'; a.click();
-        }}>Export</button>}
-        <input ref={fileInputRef} type="file" accept=".json" style={{display:'none'}} onChange={handleConfigImport} />
-      </div>
-
-      {/* Requirement category chips */}
-      {activeConfig && (
-        <div className="chips">
-          {activeConfig.categories.map(cat => (
-            <span key={cat.id} className={`chip ${selectedCats.has(cat.id) ? 'active' : ''}`}
-              style={selectedCats.has(cat.id) ? { background: cat.color, borderColor: cat.color, color: '#fff' } : { borderColor: cat.color, color: cat.color }}
-              onClick={() => toggleCat(cat.id)} title={cat.notes || cat.description}>
-              {cat.name}
-            </span>
-          ))}
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" onClick={e=>e.stopPropagation()}>
+        <div className="modal-header">
+          <h2>{initial ? 'Edit' : 'Create'} Requirement Config</h2>
+          <button className="modal-close" onClick={onClose}>×</button>
         </div>
-      )}
-
-      {/* Search and filters */}
-      <div className="filters">
-        <input type="text" placeholder="Search courses..." value={search} onChange={e => setSearch(e.target.value)} />
-        <select value={levelFilter} onChange={e => setLevelFilter(e.target.value)}>
-          <option value="">All levels</option>
-          <option value="100">100+</option>
-          <option value="200">200+</option>
-          <option value="300">300+</option>
-          <option value="400">400+</option>
-          <option value="500">500+</option>
-          <option value="600">600+</option>
-          <option value="700">700+</option>
-        </select>
-        <select value={locationFilter} onChange={e => setLocationFilter(e.target.value)}>
-          <option value="">All locations</option>
-          {locations.map(l => <option key={l} value={l}>{l}</option>)}
-        </select>
-      </div>
-
-      {/* Department chips */}
-      <div className="chips">
-        {deptGroups.slice(0, 30).map(g => (
-          <span key={g.dept} className={`chip dept ${selectedDepts.has(g.dept) ? 'active' : ''}`}
-            onClick={() => toggleDept(g.dept)} title={g.name}>
-            {g.dept} ({g.count})
-          </span>
-        ))}
-        {selectedDepts.size > 0 && <span className="chip" onClick={() => setSelectedDepts(new Set())} style={{color: 'var(--danger)'}}>✕ Clear</span>}
-      </div>
-
-      {/* Time blocking */}
-      <div className="time-block-section">
-        <h3>Schedule Conflicts</h3>
-        <div style={{display:'flex', gap:'8px', alignItems:'center', flexWrap:'wrap'}}>
-          <label style={{fontSize:'0.8rem'}}>
-            <input type="checkbox" checked={hideConflicts} onChange={e => setHideConflicts(e.target.checked)} /> Hide courses that conflict with blocked times
-          </label>
-          <button className="btn sm" onClick={() => icsInputRef.current?.click()}>Import .ics</button>
-          <input ref={icsInputRef} type="file" accept=".ics" style={{display:'none'}} onChange={handleICSImport} />
-        </div>
-        {timeBlocks.length > 0 && (
-          <div className="time-blocks">
-            {timeBlocks.map((b, i) => (
-              <span key={i} className="time-block-tag">
-                {b.days} {b.begin}–{b.end} {b.label !== 'Blocked' ? `(${b.label})` : ''}
-                <button onClick={() => removeTimeBlock(i)}>✕</button>
-              </span>
-            ))}
-          </div>
-        )}
-        <div className="add-block">
-          <select value={newBlockDay} onChange={e => setNewBlockDay(e.target.value)}>
-            {['M','T','W','R','F','MW','TR','MWF','TBA'].map(d => <option key={d} value={d}>{d}</option>)}
-          </select>
-          <input type="text" value={newBlockBegin} onChange={e => setNewBlockBegin(e.target.value)} style={{width:'80px'}} placeholder="09:00AM" />
-          <input type="text" value={newBlockEnd} onChange={e => setNewBlockEnd(e.target.value)} style={{width:'80px'}} placeholder="10:00AM" />
-          <button className="btn sm primary" onClick={addTimeBlock}>+ Block</button>
-          {timeBlocks.length > 0 && <button className="btn sm danger" onClick={() => setTimeBlocks([])}>Clear All</button>}
-        </div>
-      </div>
-
-      {/* Stats */}
-      <div className="stats">
-        Showing {filteredCourses.length} / {courseData.courses.length} courses
-        {selectedCats.size > 0 && activeConfig && ` · Filtered by: ${activeConfig.categories.filter(c => selectedCats.has(c.id)).map(c => c.name).join(', ')}`}
-      </div>
-
-      {/* Course list */}
-      {filteredCourses.slice(0, 200).map(c => {
-        const matchingCats = activeConfig ? activeConfig.categories.filter(cat => courseMatchesCategory(c, cat)) : [];
-        return (
-          <div key={c.num} className="course-card">
-            <div className="course-header">
-              <div>
-                <span className="course-num">{c.num}</span>{' '}
-                <span className="course-title">{c.title}</span>
-                {matchingCats.map(cat => (
-                  <span key={cat.id} className="badge" style={{background: cat.color, color: '#fff'}}>{cat.name}</span>
-                ))}
+        <div className="modal-body">
+          {jsonMode ? (
+            <>
+              <div className="form-label">Paste JSON config</div>
+              <textarea value={jsonText} onChange={e=>setJsonText(e.target.value)} rows={15} placeholder='{"id":"...","name":"...","categories":[...]}' />
+              <div style={{marginTop:8,display:'flex',gap:8}}>
+                <button className="btn btn-accent" onClick={handleImportJson}>Parse JSON</button>
+                <button className="btn" onClick={()=>setJsonMode(false)}>Back to editor</button>
               </div>
-              <span className="course-meta">{c.units} units · {c.deptName}</span>
-            </div>
-            {c.sections.length > 0 && (
-              <div className="sections">
-                {c.sections.map((s, i) => {
-                  const conflict = timeBlocks.length > 0 && sectionConflictsWithBlocks(s, timeBlocks);
-                  return (
-                    <div key={i} className={`section-row${conflict ? ' conflict' : ''}`}>
-                      {s.id && <span style={{fontWeight:600, minWidth:'30px'}}>{s.id}</span>}
-                      <span style={{minWidth:'40px'}}>{s.days || 'TBA'}</span>
-                      <span style={{minWidth:'120px'}}>{s.begin && s.end ? `${s.begin} – ${s.end}` : ''}</span>
-                      {s.loc && <span>{s.loc}</span>}
-                    </div>
-                  );
-                })}
+            </>
+          ) : (
+            <>
+              <div className="form-row">
+                <div><div className="form-label">Config ID (url-safe)</div><input type="text" value={cfg.id} onChange={e=>updateField('id',e.target.value)} placeholder="my-program" /></div>
+                <div><div className="form-label">Display Name</div><input type="text" value={cfg.name} onChange={e=>updateField('name',e.target.value)} placeholder="My Program Requirements" /></div>
               </div>
-            )}
-          </div>
-        );
-      })}
-      {filteredCourses.length > 200 && <p className="stats">Showing first 200 of {filteredCourses.length} results. Narrow your search to see more.</p>}
-      {filteredCourses.length === 0 && <p className="stats">No courses match the current filters.</p>}
+              <div className="form-label">Description</div>
+              <input type="text" value={cfg.description} onChange={e=>updateField('description',e.target.value)} placeholder="Brief description..." style={{marginBottom:12}} />
 
-      {/* Config editor modal */}
-      {showEditor && (
-        <div className="modal-overlay" onClick={() => setShowEditor(false)}>
-          <div className="modal" onClick={e => e.stopPropagation()}>
-            <h2>Edit Requirement Config</h2>
-            <textarea value={editorJson} onChange={e => setEditorJson(e.target.value)} />
-            <div style={{display:'flex', gap:'8px', marginTop:'12px', justifyContent:'flex-end'}}>
-              <button className="btn" onClick={() => setShowEditor(false)}>Cancel</button>
-              <button className="btn primary" onClick={saveEditor}>Save</button>
-            </div>
-          </div>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+                <div className="filter-label" style={{margin:0}}>Requirement Categories</div>
+                <button className="btn btn-sm btn-green" onClick={addCategory}>+ Add Category</button>
+              </div>
+
+              {cfg.categories.map((cat, i) => (
+                <div key={i} className="cat-editor">
+                  <div className="cat-editor-header">
+                    <input type="text" value={cat.name} onChange={e=>updateCat(i,'name',e.target.value)} placeholder="Category name" style={{maxWidth:250,fontWeight:600}} />
+                    <button className="btn btn-sm" style={{color:'var(--accent)'}} onClick={()=>removeCategory(i)}>Remove</button>
+                  </div>
+                  <div className="form-row">
+                    <div><div className="form-label">ID</div><input type="text" value={cat.id} onChange={e=>updateCat(i,'id',e.target.value)} /></div>
+                    <div><div className="form-label">Min Level</div><input type="number" value={cat.minLevel||600} onChange={e=>updateCat(i,'minLevel',+e.target.value)} /></div>
+                    <div><div className="form-label">Badge Color</div><input type="text" value={cat.color||'#60a5fa'} onChange={e=>updateCat(i,'color',e.target.value)} style={{fontFamily:'var(--mono)'}} /></div>
+                  </div>
+                  <div className="form-label">Departments (comma-separated codes)</div>
+                  <input type="text" value={(cat.departments||[]).join(', ')} onChange={e=>updateCat(i,'departments',e.target.value.split(',').map(s=>s.trim()).filter(Boolean))} placeholder="18, 15, 16" style={{marginBottom:6}} />
+                  <div className="form-label">Include courses (comma-separated, e.g. 51-882)</div>
+                  <input type="text" value={(cat.includeCourses||[]).join(', ')} onChange={e=>updateCat(i,'includeCourses',e.target.value.split(',').map(s=>s.trim()).filter(Boolean))} style={{marginBottom:6}} />
+                  <div className="form-label">Exclude courses</div>
+                  <input type="text" value={(cat.excludeCourses||[]).join(', ')} onChange={e=>updateCat(i,'excludeCourses',e.target.value.split(',').map(s=>s.trim()).filter(Boolean))} style={{marginBottom:6}} />
+                  <div className="form-label">Notes</div>
+                  <input type="text" value={cat.notes||''} onChange={e=>updateCat(i,'notes',e.target.value)} />
+                </div>
+              ))}
+            </>
+          )}
         </div>
-      )}
+        <div className="modal-footer">
+          {!jsonMode && <button className="btn" onClick={()=>{setJsonText(JSON.stringify(cfg,null,2));setJsonMode(true);}}>Edit as JSON</button>}
+          {!jsonMode && <button className="btn" onClick={handleExport}>Export .json</button>}
+          {!jsonMode && <button className="btn btn-accent" onClick={()=>{onSave(cfg);onClose();}}>Save & Use</button>}
+        </div>
+      </div>
     </div>
   );
 }
 
-ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+// ── Config Picker Modal ──
+function ConfigPickerModal({configs, activeId, onSelect, onClose, onEdit, onCreate, onLoadUrl, onLoadFile}) {
+  const [urlInput, setUrlInput] = useState('');
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" style={{maxWidth:550}} onClick={e=>e.stopPropagation()}>
+        <div className="modal-header">
+          <h2>Requirement Configs</h2>
+          <button className="modal-close" onClick={onClose}>×</button>
+        </div>
+        <div className="modal-body">
+          <div className="info-box note">
+            Configs define which courses count toward your degree requirements. Each config has categories (like "CIT Elective" or "General Tech") with department lists, level minimums, and include/exclude rules.
+          </div>
+
+          {configs.map(c => (
+            <div key={c.id} className={`config-card ${c.id===activeId?'active':''}`} onClick={()=>{onSelect(c.id);onClose();}}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'start'}}>
+                <div>
+                  <h4>{c.name}</h4>
+                  <p>{c.description}</p>
+                  <p style={{fontSize:11,color:'var(--text-muted)',marginTop:2}}>{c.categories?.length||0} categories</p>
+                </div>
+                <button className="btn btn-sm" onClick={e=>{e.stopPropagation();onEdit(c);}}>Edit</button>
+              </div>
+            </div>
+          ))}
+
+          <div className="divider" />
+
+          <div style={{display:'flex',gap:8,marginBottom:12}}>
+            <button className="btn btn-green" onClick={onCreate}>+ Create New Config</button>
+            <div className="ics-upload">
+              <input type="file" id="cfg-file" accept=".json" onChange={e=>{const f=e.target.files[0];if(f){const r=new FileReader();r.onload=ev=>{try{onLoadFile(JSON.parse(ev.target.result));}catch(err){alert('Invalid JSON');}};r.readAsText(f);}}} />
+              <label htmlFor="cfg-file" style={{padding:'6px 12px',border:'1px solid var(--border)',borderStyle:'solid',borderRadius:'var(--radius)'}}>Import .json file</label>
+            </div>
+          </div>
+
+          <div className="form-label">Load config from URL</div>
+          <div style={{display:'flex',gap:6}}>
+            <input type="text" value={urlInput} onChange={e=>setUrlInput(e.target.value)} placeholder="https://example.com/configs/my-config.json" />
+            <button className="btn btn-sm btn-accent" onClick={()=>{if(urlInput)onLoadUrl(urlInput);}}>Load</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Main App ──
+function App() {
+  const [courseData, setCourseData] = useState(null);
+  const [loadError, setLoadError] = useState(null);
+  const [search, setSearch] = useState('');
+  const [minLevel, setMinLevel] = useState(600);
+  const [selectedDepts, setSelectedDepts] = useState(new Set());
+  const [reqFilter, setReqFilter] = useState('any');
+  const [blocked, setBlocked] = useState([]);
+  const [filterConflicts, setFilterConflicts] = useState(true);
+  const [expanded, setExpanded] = useState(null);
+  const [blockDays, setBlockDays] = useState('TR');
+  const [blockStart, setBlockStart] = useState('11:00AM');
+  const [blockEnd, setBlockEnd] = useState('12:20PM');
+  const [locationFilter, setLocationFilter] = useState('');
+
+  // Config state
+  const [configs, setConfigs] = useState([]);
+  const [activeConfigId, setActiveConfigId] = useState(null);
+  const [showConfigPicker, setShowConfigPicker] = useState(false);
+  const [showConfigEditor, setShowConfigEditor] = useState(false);
+  const [editingConfig, setEditingConfig] = useState(null);
+
+  const activeConfig = useMemo(() => configs.find(c=>c.id===activeConfigId), [configs, activeConfigId]);
+
+  // Load course data
+  useEffect(() => {
+    fetch(`data/courses.json?v=${Date.now()}`)
+      .then(r => {if(!r.ok)throw new Error(`HTTP ${r.status}`);return r.json();})
+      .then(d => {
+        setCourseData(d);
+        // Auto-select Pittsburgh if location data exists
+        const hasLoc = d.courses?.some(c => c.sections?.some(s => s.loc));
+        if (hasLoc) setLocationFilter('Pittsburgh, Pennsylvania');
+      })
+      .catch(e => setLoadError(e.message));
+  }, []);
+
+  // Load built-in configs
+  useEffect(() => {
+    // Check localStorage for previously selected config
+    let savedActiveId = null;
+    try {
+      savedActiveId = localStorage.getItem('cmu-schedule-helper-active-config');
+    } catch(e) {}
+
+    // Load custom configs from localStorage
+    try {
+      const saved = localStorage.getItem('cmu-schedule-helper-configs');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        setConfigs(prev => {
+          const ids = new Set(prev.map(c=>c.id));
+          return [...prev, ...parsed.filter(c=>!ids.has(c.id))];
+        });
+      }
+    } catch(e) {}
+
+    // Fetch all builtin configs, then auto-select
+    Promise.all(
+      BUILTIN_CONFIGS.map(name =>
+        fetch(`configs/${name}.json?v=${Date.now()}`).then(r=>r.ok?r.json():null).catch(()=>null)
+      )
+    ).then(results => {
+      const loaded = results.filter(Boolean);
+      if (loaded.length) {
+        setConfigs(prev => {
+          const ids = new Set(prev.map(c=>c.id));
+          return [...prev, ...loaded.filter(c=>!ids.has(c.id))];
+        });
+        // Auto-select: use saved preference, or default to first builtin
+        setActiveConfigId(prev => prev || savedActiveId || loaded[0].id);
+      }
+    });
+  }, []);
+
+  // Persist configs
+  useEffect(() => {
+    if (configs.length) {
+      try {
+        const custom = configs.filter(c => !BUILTIN_CONFIGS.includes(c.id));
+        localStorage.setItem('cmu-schedule-helper-configs', JSON.stringify(custom));
+      } catch(e) {}
+    }
+  }, [configs]);
+
+  useEffect(() => {
+    if (activeConfigId) {
+      try { localStorage.setItem('cmu-schedule-helper-active-config', activeConfigId); } catch(e) {}
+    }
+  }, [activeConfigId]);
+
+  const saveConfig = useCallback((cfg) => {
+    setConfigs(prev => {
+      const idx = prev.findIndex(c=>c.id===cfg.id);
+      if (idx >= 0) { const next=[...prev]; next[idx]=cfg; return next; }
+      return [...prev, cfg];
+    });
+    setActiveConfigId(cfg.id);
+  }, []);
+
+  const loadConfigUrl = useCallback((url) => {
+    fetch(url)
+      .then(r=>r.json())
+      .then(cfg=>{saveConfig(cfg);setShowConfigPicker(false);})
+      .catch(e=>alert('Failed to load config: '+e.message));
+  }, [saveConfig]);
+
+  const courses = courseData?.courses || [];
+
+  const toggleDept = useCallback(d => {
+    setSelectedDepts(prev => {const n=new Set(prev);n.has(d)?n.delete(d):n.add(d);return n;});
+  }, []);
+
+  const selectDeptGroup = useCallback(depts => {
+    setSelectedDepts(prev => {const n=new Set(prev);const all=depts.every(d=>n.has(d));depts.forEach(d=>all?n.delete(d):n.add(d));return n;});
+  }, []);
+
+  const addBlock = useCallback(() => {
+    const ds=expandDays(blockDays),s=parseTime(blockStart),e=parseTime(blockEnd);
+    if(!ds.length||s==null||e==null)return;
+    setBlocked(prev=>[...prev,...ds.map(d=>[d,s,e])]);
+  }, [blockDays,blockStart,blockEnd]);
+
+  const handleICS = useCallback(e => {
+    const file=e.target.files[0];if(!file)return;
+    const reader=new FileReader();
+    reader.onload=ev=>{const blocks=parseICS(ev.target.result);setBlocked(prev=>[...prev,...blocks]);};
+    reader.readAsText(file);
+  }, []);
+
+  const filtered = useMemo(() => {
+    const searchLower = search.toLowerCase();
+    return courses.filter(c => {
+      if (c.level < minLevel) return false;
+      if (selectedDepts.size && !selectedDepts.has(c.dept)) return false;
+
+      // Location filter: course must have at least one section at the selected location
+      if (locationFilter) {
+        const hasMatchingSection = c.sections.some(s => {
+          if (!s.loc) return false; // section has no location data — skip
+          return s.loc === locationFilter;
+        });
+        if (!hasMatchingSection) return false;
+      }
+
+      // Requirement filter
+      if (reqFilter !== 'any' && activeConfig) {
+        const cat = activeConfig.categories.find(cat => cat.id === reqFilter);
+        if (cat && !courseMatchesCategory(c, cat)) return false;
+      }
+
+      if (filterConflicts && blocked.length && !courseHasOption(c, blocked)) return false;
+      if (searchLower) {
+        const hay = `${c.num} ${c.title} ${c.deptName}`.toLowerCase();
+        if (!hay.includes(searchLower)) return false;
+      }
+      return true;
+    });
+  }, [courses,search,minLevel,selectedDepts,reqFilter,blocked,filterConflicts,activeConfig,locationFilter]);
+
+  const allLocations = useMemo(() => {
+    const s = new Set();
+    courses.forEach(c => c.sections.forEach(sec => { if (sec.loc) s.add(sec.loc); }));
+    return [...s].sort();
+  }, [courses]);
+
+  const grouped = useMemo(() => {
+    const g={};
+    for(const c of filtered){if(!g[c.deptName])g[c.deptName]=[];g[c.deptName].push(c);}
+    return Object.entries(g).sort((a,b)=>a[0].localeCompare(b[0]));
+  }, [filtered]);
+
+  const allDepts = useMemo(() => {
+    const s=new Set();courses.forEach(c=>{if(c.level>=minLevel)s.add(c.dept);});return[...s].sort();
+  }, [courses,minLevel]);
+
+  function getCategoryBadges(course) {
+    if (!activeConfig) return null;
+    return activeConfig.categories
+      .filter(cat => courseMatchesCategory(course, cat))
+      .map(cat => <span key={cat.id} className="req-badge" style={{background:cat.color+'20',color:cat.color}}>{cat.name}</span>);
+  }
+
+  if (loadError) return <div className="loading"><span style={{color:'var(--accent)'}}>Failed to load course data</span><span>{loadError}</span><span style={{fontSize:11}}>Make sure data/courses.json exists</span></div>;
+  if (!courseData) return <div className="loading"><div style={{width:20,height:20,border:'2px solid var(--border)',borderTopColor:'var(--accent)',borderRadius:'50%',animation:'spin 0.6s linear infinite'}} /><span>Loading courses...</span><style>{'@keyframes spin{to{transform:rotate(360deg)}}'}</style></div>;
+
+  return (
+    <>
+      <header className="app-header">
+        <div className="header-left">
+          <div className="app-title">CMU Schedule Helper</div>
+          <div className="app-semester">
+            {courseData.semester} <span>— {filtered.length} / {courses.length}</span>
+          </div>
+        </div>
+        <div className="header-right">
+          <button className="btn" onClick={()=>setShowConfigPicker(true)}>
+            {activeConfig ? activeConfig.name : 'No config loaded'}
+            <span style={{fontSize:10,opacity:0.6}}>▼</span>
+          </button>
+        </div>
+      </header>
+
+      <div className="layout">
+        <aside className="sidebar">
+          <div className="search-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <input type="text" placeholder="Search courses..." value={search} onChange={e=>setSearch(e.target.value)} />
+          </div>
+
+          <div className="filter-section">
+            <div className="filter-label">Minimum Level</div>
+            <select value={minLevel} onChange={e=>setMinLevel(+e.target.value)}>
+              <option value={0}>All levels</option>
+              {[100,200,300,400,500,600,700,800].map(l=><option key={l} value={l}>{l}+{l===600?' (Graduate)':''}</option>)}
+            </select>
+          </div>
+
+          <div className="filter-section">
+            <div className="filter-label">Campus / Location</div>
+            <select value={locationFilter} onChange={e=>setLocationFilter(e.target.value)}>
+              <option value="">All locations</option>
+              {allLocations.map(l=><option key={l} value={l}>{l}</option>)}
+            </select>
+          </div>
+
+          {/* Requirement Filter - from active config */}
+          {activeConfig && activeConfig.categories.length > 0 && (
+            <div className="filter-section">
+              <div className="filter-label">Requirement Filter</div>
+              <div className="chip-group">
+                <span className={`chip ${reqFilter==='any'?'active':''}`} onClick={()=>setReqFilter('any')}>All</span>
+                {activeConfig.categories.map(cat => (
+                  <span key={cat.id} className={`chip ${reqFilter===cat.id?'active':''}`}
+                    style={reqFilter===cat.id?{background:cat.color+'20',borderColor:cat.color,color:cat.color}:{}}
+                    onClick={()=>setReqFilter(reqFilter===cat.id?'any':cat.id)}>
+                    {cat.name}
+                  </span>
+                ))}
+              </div>
+              {reqFilter !== 'any' && activeConfig.categories.find(c=>c.id===reqFilter)?.notes && (
+                <div style={{fontSize:11,color:'var(--text-muted)',marginTop:6,lineHeight:1.4}}>
+                  {activeConfig.categories.find(c=>c.id===reqFilter).notes}
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="filter-section">
+            <div className="filter-label">Department Groups</div>
+            <div className="chip-group" style={{marginBottom:6}}>
+              {Object.entries(DEPT_GROUPS).map(([name,depts])=>{
+                const allSel=depts.every(d=>selectedDepts.has(d));
+                return <span key={name} className={`chip ${allSel?'active-green':''}`} onClick={()=>selectDeptGroup(depts)}>{name}</span>;
+              })}
+              {selectedDepts.size>0&&<span className="chip btn-accent" onClick={()=>setSelectedDepts(new Set())}>Clear</span>}
+            </div>
+            <div className="filter-label">Individual Depts</div>
+            <div className="chip-group">
+              {allDepts.map(d=><span key={d} className={`chip ${selectedDepts.has(d)?'active':''}`} onClick={()=>toggleDept(d)} title={DEPT_NAMES[d]||d}>{d}</span>)}
+            </div>
+          </div>
+
+          <div className="divider"/>
+
+          <div className="filter-section">
+            <div className="filter-label">Block Time Slots</div>
+            <div className="time-block">
+              <input type="text" value={blockDays} onChange={e=>setBlockDays(e.target.value.toUpperCase())} placeholder="TR" style={{maxWidth:46}}/>
+              <input type="text" value={blockStart} onChange={e=>setBlockStart(e.target.value)} placeholder="11:00AM"/>
+              <span style={{color:'var(--text-muted)',fontSize:12}}>–</span>
+              <input type="text" value={blockEnd} onChange={e=>setBlockEnd(e.target.value)} placeholder="12:20PM"/>
+              <button className="btn btn-sm btn-accent" onClick={addBlock}>+</button>
+            </div>
+            <div style={{fontSize:10,color:'var(--text-muted)',marginBottom:6}}>Days: M T W R F (R=Thu)</div>
+
+            <div className="ics-upload">
+              <input type="file" id="ics" accept=".ics" onChange={handleICS}/>
+              <label htmlFor="ics">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Import .ics calendar
+              </label>
+            </div>
+
+            {blocked.length>0&&<div style={{marginTop:6}}>{blocked.map((b,i)=>(
+              <div key={i} className="blocked-item"><span>{b[0]} {fmtMin(b[1])}–{fmtMin(b[2])}</span><button onClick={()=>setBlocked(prev=>prev.filter((_,j)=>j!==i))}>×</button></div>
+            ))}</div>}
+
+            {blocked.length>0&&<div className="toggle-row" style={{marginTop:6}}>
+              <span className="toggle-label">Hide conflicting courses</span>
+              <div className={`toggle ${filterConflicts?'on':''}`} onClick={()=>setFilterConflicts(!filterConflicts)}/>
+            </div>}
+          </div>
+        </aside>
+
+        <main className="main-content">
+          <div className="results-header">
+            <div className="results-count">
+              <strong>{filtered.length}</strong> courses
+              {reqFilter!=='any'&&activeConfig&&<> matching <strong>{activeConfig.categories.find(c=>c.id===reqFilter)?.name}</strong></>}
+              {blocked.length>0&&filterConflicts&&<> · conflicts hidden</>}
+            </div>
+          </div>
+
+          {filtered.length===0?(
+            <div className="empty-state"><h3>No courses match</h3><p>Try adjusting your filters or removing blocked time slots.</p></div>
+          ):(
+            grouped.map(([deptName,list])=>(
+              <div key={deptName} className="dept-group">
+                <div className="dept-group-header">{deptName} ({list.length})</div>
+                {list.sort((a,b)=>a.num.localeCompare(b.num)).map(c=>{
+                  const isExp=expanded===c.num;
+                  return(
+                    <div key={c.num}>
+                      <div className="course-row" onClick={()=>setExpanded(isExp?null:c.num)}>
+                        <div className="course-num">{c.num}</div>
+                        <div className="course-title">{c.title}{getCategoryBadges(c)}</div>
+                        <div className="course-units">{c.units}u</div>
+                      </div>
+                      {isExp&&(
+                        <div className="expanded-detail">
+                          <div className="detail-grid">
+                            {c.sections.map((s,i)=>{
+                              const conflict=blocked.length>0&&secConflicts([s.id,s.days,s.begin,s.end],blocked);
+                              const isTba=s.days==='TBA'||!s.begin;
+                              const diffLoc = locationFilter && s.loc && s.loc !== locationFilter;
+                              return(
+                                <div key={i} className="detail-section" style={conflict?{borderColor:'var(--accent-dim)',opacity:0.5}:diffLoc?{opacity:0.4}:isTba?{}:{borderColor:'rgba(52,211,153,0.2)'}}>
+                                  <div className="detail-section-id" style={conflict?{color:'var(--accent)',textDecoration:'line-through'}:{}}>{s.id||'—'}</div>
+                                  <div className="detail-section-time">{isTba?'TBA':`${s.days} ${s.begin}–${s.end}`}{conflict&&' ✕'}</div>
+                                  {s.loc && s.loc !== 'Pittsburgh, Pennsylvania' && <div style={{fontSize:10,color:'var(--yellow)',marginTop:1}}>{s.loc}</div>}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            ))
+          )}
+        </main>
+      </div>
+
+      {showConfigPicker && (
+        <ConfigPickerModal
+          configs={configs} activeId={activeConfigId}
+          onSelect={id=>{setActiveConfigId(id);setReqFilter('any');}}
+          onClose={()=>setShowConfigPicker(false)}
+          onEdit={cfg=>{setEditingConfig(cfg);setShowConfigEditor(true);setShowConfigPicker(false);}}
+          onCreate={()=>{setEditingConfig(null);setShowConfigEditor(true);setShowConfigPicker(false);}}
+          onLoadUrl={loadConfigUrl}
+          onLoadFile={cfg=>{saveConfig(cfg);setShowConfigPicker(false);}}
+        />
+      )}
+
+      {showConfigEditor && (
+        <ConfigEditorModal
+          initial={editingConfig}
+          onSave={saveConfig}
+          onClose={()=>setShowConfigEditor(false)}
+        />
+      )}
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
 </script>
 </body>
 </html>
